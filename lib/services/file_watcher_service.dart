@@ -1,16 +1,20 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:get/get.dart';
 import 'package:watcher/watcher.dart';
 import 'csv_service.dart';
 
-class FileWatcherService {
+class FileWatcherService extends GetxController {
   FileWatcher? _watcher;
   StreamSubscription? _subscription;
-  String? _currentFilePath;
-  final StreamController<Set<int>> _scannedSheetsController =
-      StreamController<Set<int>>.broadcast();
+  final Rx<String?> _currentFilePath = Rx<String?>(null);
+  final Rx<Set<int>> _scannedSheets = Rx<Set<int>>({});
 
-  Stream<Set<int>> get scannedSheetsStream => _scannedSheetsController.stream;
+  // Getters
+  String? get currentFilePath => _currentFilePath.value;
+  Set<int> get scannedSheets => _scannedSheets.value;
+  Rx<Set<int>> get scannedSheetsRx => _scannedSheets; // Expose the Rx for listening
+  bool get isWatching => _currentFilePath.value != null;
 
   /// Start watching a CSV file for changes
   Future<void> startWatching(String filePath) async {
@@ -21,23 +25,23 @@ class FileWatcherService {
       throw Exception('File does not exist: $filePath');
     }
 
-    _currentFilePath = filePath;
+    _currentFilePath.value = filePath;
     _watcher = FileWatcher(filePath);
 
     // Emit initial data
     final initialSheets = await CsvService.readScannedSheets(filePath);
-    _scannedSheetsController.add(initialSheets);
+    _scannedSheets.value = initialSheets;
 
     // Watch for changes
     _subscription = _watcher!.events.listen((event) async {
       if (event.type == ChangeType.MODIFY || event.type == ChangeType.ADD) {
         print('File changed: ${event.type}');
-        
+
         // Small delay to ensure file write is complete
         await Future.delayed(const Duration(milliseconds: 100));
-        
+
         final sheets = await CsvService.readScannedSheets(filePath);
-        _scannedSheetsController.add(sheets);
+        _scannedSheets.value = sheets;
       }
     }, onError: (error) {
       print('File watcher error: $error');
@@ -51,24 +55,20 @@ class FileWatcherService {
     await _subscription?.cancel();
     _subscription = null;
     _watcher = null;
-    _currentFilePath = null;
+    _currentFilePath.value = null;
   }
 
   /// Manually refresh the current file
   Future<void> refresh() async {
-    if (_currentFilePath != null) {
-      final sheets = await CsvService.readScannedSheets(_currentFilePath!);
-      _scannedSheetsController.add(sheets);
+    if (_currentFilePath.value != null) {
+      final sheets = await CsvService.readScannedSheets(_currentFilePath.value!);
+      _scannedSheets.value = sheets;
     }
   }
 
-  /// Check if currently watching a file
-  bool get isWatching => _currentFilePath != null;
-
-  String? get currentFilePath => _currentFilePath;
-
-  void dispose() {
+  @override
+  void onClose() {
     _subscription?.cancel();
-    _scannedSheetsController.close();
+    super.onClose();
   }
 }

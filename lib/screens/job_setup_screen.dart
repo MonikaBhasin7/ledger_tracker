@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-import 'package:file_picker/file_picker.dart';
-import '../services/job_manager.dart';
+import 'package:get/get.dart';
+
+import '../services/job_controller.dart';
 
 class JobSetupScreen extends StatefulWidget {
   const JobSetupScreen({super.key});
@@ -28,17 +28,48 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
   }
 
   Future<void> _pickCsvFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['csv'],
-      dialogTitle: 'Select CSV file to monitor',
-    );
+    final controller = TextEditingController();
 
-    if (result != null && result.files.single.path != null) {
-      setState(() {
-        _selectedCsvPath = result.files.single.path!;
-      });
-    }
+    Get.dialog(
+      AlertDialog(
+        title: const Text('Select CSV File'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Enter the full path to your CSV file:'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                hintText: '/Users/yourname/Desktop/file.csv',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Tip: Drag the file from Finder into Terminal, then copy the path',
+              style: TextStyle(fontSize: 11, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              final path = controller.text.trim();
+              if (path.isNotEmpty) {
+                setState(() {
+                  _selectedCsvPath = path;
+                });
+              }
+              Get.back();
+            },
+            child: const Text('Use This File'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _startJob() async {
@@ -47,11 +78,12 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
     }
 
     if (_selectedCsvPath == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a CSV file to monitor'),
-          backgroundColor: Colors.orange,
-        ),
+      Get.snackbar(
+        'File Required',
+        'Please select a CSV file to monitor',
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
       );
       return;
     }
@@ -61,36 +93,35 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
     });
 
     try {
-      final jobManager = context.read<JobManager>();
+      final JobController jobController = Get.find();
 
       // Create the job
-      jobManager.createJob(
+      jobController.createJob(
         name: _jobNameController.text.trim(),
         startSheet: int.parse(_startSheetController.text),
         endSheet: int.parse(_endSheetController.text),
       );
 
       // Start monitoring
-      await jobManager.startMonitoring(_selectedCsvPath!);
+      await jobController.startMonitoring(_selectedCsvPath!);
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Job created and monitoring started!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pop(context);
-      }
+      Get.snackbar(
+        'Success',
+        'Job created and monitoring started!',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+
+      Navigator.pop(context);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      Get.snackbar(
+        'Error',
+        e.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -103,9 +134,7 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Print Job'),
-      ),
+      appBar: AppBar(title: const Text('Create Print Job')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Form(
@@ -115,10 +144,7 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
             children: [
               const Text(
                 'Job Details',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
               TextFormField(
@@ -149,9 +175,7 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
                         prefixIcon: Icon(Icons.first_page),
                       ),
                       keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Required';
@@ -175,16 +199,16 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
                         prefixIcon: Icon(Icons.last_page),
                       ),
                       keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                      ],
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Required';
                         }
                         final endNum = int.tryParse(value);
-                        final startNum = int.tryParse(_startSheetController.text);
-                        
+                        final startNum = int.tryParse(
+                          _startSheetController.text,
+                        );
+
                         if (endNum == null) {
                           return 'Invalid number';
                         }
@@ -200,10 +224,7 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
               const SizedBox(height: 32),
               const Text(
                 'CSV File to Monitor',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               OutlinedButton.icon(
@@ -247,7 +268,9 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
                         ),
                       )
                     : const Icon(Icons.play_arrow),

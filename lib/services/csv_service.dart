@@ -8,43 +8,56 @@ class CsvService {
   static Future<Set<int>> readScannedSheets(String filePath) async {
     try {
       final file = File(filePath);
-      
+
       if (!await file.exists()) {
         return {};
       }
 
       final contents = await file.readAsString();
-      
+
       if (contents.trim().isEmpty) {
         return {};
       }
 
-      final List<List<dynamic>> rows = const CsvToListConverter().convert(contents);
-      
+      // Split by lines first (handle different line endings)
+      final lines = contents.split(RegExp(r'\r?\n'));
+
       final Set<int> scannedSheets = {};
-      
-      for (var i = 0; i < rows.length; i++) {
-        if (rows[i].isEmpty) continue;
-        
-        // Skip header row if it exists (check if first cell is not a number)
-        if (i == 0 && rows[i][0] is String) {
-          final firstCell = rows[i][0].toString().toLowerCase();
-          if (firstCell.contains('sheet') || 
-              firstCell.contains('number') || 
-              firstCell.contains('id')) {
+
+      for (var i = 0; i < lines.length; i++) {
+        final line = lines[i].trim();
+
+        // Skip empty lines
+        if (line.isEmpty) continue;
+
+        // Split by comma to get the first column
+        final parts = line.split(',');
+        if (parts.isEmpty) continue;
+
+        final firstColumn = parts[0].trim();
+
+        // Skip header row if it exists
+        if (i == 0) {
+          final lowerCase = firstColumn.toLowerCase();
+          if (lowerCase.contains('sheet') ||
+              lowerCase.contains('number') ||
+              lowerCase.contains('id')) {
             continue;
           }
         }
-        
+
+        // Try to parse as integer
         try {
-          final sheetNumber = int.parse(rows[i][0].toString());
+          final sheetNumber = int.parse(firstColumn);
           scannedSheets.add(sheetNumber);
+          print('Parsed sheet number: $sheetNumber');
         } catch (e) {
           // Skip invalid rows
-          print('Warning: Could not parse row $i: ${rows[i]}');
+          print('Warning: Could not parse line $i: "$line"');
         }
       }
-      
+
+      print('Total scanned sheets: ${scannedSheets.length}');
       return scannedSheets;
     } catch (e) {
       print('Error reading CSV file: $e');

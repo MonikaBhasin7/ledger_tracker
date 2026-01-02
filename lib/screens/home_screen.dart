@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../services/job_manager.dart';
+import 'package:get/get.dart';
+import '../services/job_controller.dart';
 import 'job_setup_screen.dart';
 import 'monitoring_screen.dart';
 
@@ -9,21 +9,21 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final JobController jobController = Get.find();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Print Tracker'),
         centerTitle: true,
         elevation: 2,
       ),
-      body: Consumer<JobManager>(
-        builder: (context, jobManager, child) {
-          if (!jobManager.hasActiveJob) {
-            return _buildWelcomeScreen(context);
-          } else {
-            return const MonitoringScreen();
-          }
-        },
-      ),
+      body: Obx(() {
+        if (!jobController.hasActiveJob) {
+          return _buildWelcomeScreen(context);
+        } else {
+          return const MonitoringScreen();
+        }
+      }),
     );
   }
 
@@ -43,26 +43,21 @@ class HomeScreen extends StatelessWidget {
             Text(
               'Print Tracker',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 16),
             Text(
               'Track your print jobs and verify scanned sheets',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                color: Colors.grey[600],
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 48),
             ElevatedButton.icon(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const JobSetupScreen(),
-                  ),
-                );
+                Get.to(() => const JobSetupScreen());
               },
               icon: const Icon(Icons.add),
               label: const Text('Create New Print Job'),
@@ -89,9 +84,8 @@ class HomeScreen extends StatelessWidget {
   }
 
   void _showInfoDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
+    Get.dialog(
+      AlertDialog(
         title: const Text('How Print Tracker Works'),
         content: SingleChildScrollView(
           child: Column(
@@ -132,7 +126,7 @@ class HomeScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Get.back(),
             child: const Text('Got it'),
           ),
         ],
