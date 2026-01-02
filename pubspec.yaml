@@ -43,9 +43,6 @@ dependencies:
 #  # File watching
   watcher: ^1.1.0
 #
-#  # State management
-  provider: ^6.1.1
-#
 #  # Desktop window management
   window_manager: ^0.5.1
 #
