@@ -67,7 +67,7 @@ class JobController extends GetxController {
   /// Handle updates from the file watcher
   void _onScannedSheetsUpdate(Set<int> scannedSheets) {
     if (_currentJob.value != null) {
-      _currentJob.value = _currentJob.value!.copyWith(scannedSheets: scannedSheets);
+      _currentJob.value = _currentJob.value?.copyWith(scannedSheets: scannedSheets);
     }
   }
 
@@ -84,10 +84,10 @@ class JobController extends GetxController {
     }
 
     return {
-      'total': _currentJob.value!.totalSheets,
-      'scanned': _currentJob.value!.scannedCount,
-      'missing': _currentJob.value!.missingCount,
-      'progress': _currentJob.value!.progressPercentage,
+      'total': _currentJob.value?.totalSheets,
+      'scanned': _currentJob.value?.scannedCount,
+      'missing': _currentJob.value?.missingCount,
+      'progress': _currentJob.value?.progressPercentage,
     };
   }
 
