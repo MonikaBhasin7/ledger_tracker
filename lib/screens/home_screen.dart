@@ -41,7 +41,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 32),
             Text(
-              'Print Tracker',
+              'Print Tracker - Ledger Graphics',
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),

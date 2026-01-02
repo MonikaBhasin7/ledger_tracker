@@ -41,15 +41,25 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
             const SizedBox(height: 16),
             TextField(
               controller: controller,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: '/Users/yourname/Desktop/file.csv',
-                border: OutlineInputBorder(),
+                hintStyle: TextStyle(
+                  color: Colors.grey[400],
+                  fontStyle: FontStyle.italic,
+                  fontSize: 13,
+                ),
+                border: const OutlineInputBorder(),
+              ),
+              style: const TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Tip: Drag the file from Finder into Terminal, then copy the path',
-              style: TextStyle(fontSize: 11, color: Colors.grey),
+              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
             ),
           ],
         ),
@@ -149,11 +159,19 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
               const SizedBox(height: 24),
               TextFormField(
                 controller: _jobNameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Job Name',
                   hintText: 'e.g., OMR Sheets Batch 1',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.work_outline),
+                  hintStyle: TextStyle(
+                    color: Colors.grey[400],
+                    fontStyle: FontStyle.italic,
+                  ),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.work_outline),
+                ),
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w500,
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -168,11 +186,19 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
                   Expanded(
                     child: TextFormField(
                       controller: _startSheetController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Start Sheet',
                         hintText: '1',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.first_page),
+                        hintStyle: TextStyle(
+                          color: Colors.grey[400],
+                          fontStyle: FontStyle.italic,
+                        ),
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.first_page),
+                      ),
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500,
                       ),
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -192,11 +218,19 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
                   Expanded(
                     child: TextFormField(
                       controller: _endSheetController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'End Sheet',
                         hintText: '1000',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.last_page),
+                        hintStyle: TextStyle(
+                          color: Colors.grey[400],
+                          fontStyle: FontStyle.italic,
+                        ),
+                        border: const OutlineInputBorder(),
+                        prefixIcon: const Icon(Icons.last_page),
+                      ),
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w500,
                       ),
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],

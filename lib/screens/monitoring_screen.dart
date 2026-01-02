@@ -151,16 +151,16 @@ class MonitoringScreen extends StatelessWidget {
                         label: const Text('Refresh'),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: job.missingCount > 0
-                            ? () => _exportMissingSheets(job.missingSheets)
-                            : null,
-                        icon: const Icon(Icons.download),
-                        label: const Text('Export Missing'),
-                      ),
-                    ),
+                    // const SizedBox(width: 12),
+                    // Expanded(
+                    //   child: ElevatedButton.icon(
+                    //     onPressed: job.missingCount > 0
+                    //         ? () => _exportMissingSheets(job.missingSheets)
+                    //         : null,
+                    //     icon: const Icon(Icons.download),
+                    //     label: const Text('Export Missing'),
+                    //   ),
+                    // ),
                   ],
                 ),
               ],
