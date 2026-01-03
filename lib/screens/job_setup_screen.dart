@@ -16,6 +16,7 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
   final _jobNameController = TextEditingController();
   final _startSheetController = TextEditingController();
   final _endSheetController = TextEditingController();
+  final _batchSizeController = TextEditingController();
   String? _selectedCsvPath;
   bool _isLoading = false;
 
@@ -24,6 +25,7 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
     _jobNameController.dispose();
     _startSheetController.dispose();
     _endSheetController.dispose();
+    _batchSizeController.dispose();
     super.dispose();
   }
 
@@ -110,9 +112,16 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
         name: _jobNameController.text.trim(),
         startSheet: int.parse(_startSheetController.text),
         endSheet: int.parse(_endSheetController.text),
+        batchSize: int.parse(_batchSizeController.text),
       );
 
-      // Start monitoring
+      // Navigate back to home screen first (which will show monitoring screen)
+      Get.back();
+
+      // Small delay to ensure navigation completes
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // Start monitoring (alerts will now appear on monitoring screen)
       await jobController.startMonitoring(_selectedCsvPath!);
 
       Get.snackbar(
@@ -122,8 +131,6 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
       );
-
-      Navigator.pop(context);
     } catch (e) {
       Get.snackbar(
         'Error',
@@ -254,6 +261,37 @@ class _JobSetupScreenState extends State<JobSetupScreen> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _batchSizeController,
+                decoration: InputDecoration(
+                  labelText: 'Batch Size',
+                  hintText: 'e.g., 100',
+                  hintStyle: TextStyle(
+                    color: Colors.grey[400],
+                    fontStyle: FontStyle.italic,
+                  ),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.inventory_2_outlined),
+                  helperText: 'Number of sheets per batch',
+                ),
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w500,
+                ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter batch size';
+                  }
+                  final num = int.tryParse(value);
+                  if (num == null || num < 1) {
+                    return 'Must be at least 1';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 32),
               const Text(
